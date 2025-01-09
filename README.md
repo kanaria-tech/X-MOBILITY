@@ -38,19 +38,20 @@ python3 train.py -c configs/train_config.gin -d datasets/ -o <output-dir>
 python3 train.py -c configs/pretrained_gwm_train_config.gin -d datasets/ -o <output-dir>
 ```
 
-4. Evaluating checkpoint
+4. Evaluating checkpoint:
 ```
 python3 evaluate.py -c configs/train_config.gin -d datasets/ -p <checkpoint>
 ```
 
-5. ONNX & TensorRT conversion
+5. ONNX & TensorRT conversion:
 ```
 python3 onnx_conversion.py -p <checkpoint> -o <onnx_file_path>
 
 python3 trt_conversion.py -o <onnx_file_path> -t <trt_file_path>
 ```
 
-6. E2E navigation with ROS2
+6. E2E navigation with ROS2:
+
 With the TensorRT engine, follow this [instruction](./ros2_deployment/README.md) to setup ROS2, Isaac Sim to run a demo example of X-Mobility.
 
 ## License
