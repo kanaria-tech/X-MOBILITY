@@ -18,32 +18,40 @@ This is the PyTorch implementation for training and deployment of <a href="https
 docker build --network=host -t <image-name> .
 ```
 
-3. Download the datasets
-[TBD]
+3. Download the datasets from Hugging Face: https://huggingface.co/nvidia/X-Mobility
+- **x_mobility_isaac_sim_nav2_100k.zip**: Teacher policy dataset to train world model and action network together.
+- **x_mobility_isaac_sim_random_160k.zip**: Random action dataset to pre-train world model without action network.
+
+4. [Optional] Download the pre-trained checkpoints from Hugging Face: https://huggingface.co/nvidia/X-Mobility
+- **x_mobility-nav2-semantic_action_path.ckpt**: Trained with teacher policy dataset with semantic segmenetation, action and path decoding enabled.
 
 ## Usages
-1. Launch the docker image and set WANDB_API_KEY inside:
+1. Launch the docker image:
 ```
-docker run --shm-size=64g -v <path-to-datasets>:/workspace/datasets -it <image-name> bash
+docker run --shm-size=512g -v <path-to-datasets>:/workspace/datasets -it <image-name> bash
+```
+
+2. Set WANDB_API_KEY inside container:
+```
 export WANDB_API_KEY=<wandb-api-key>
 ```
 
-2. Training with action policy enabled:
+3. Training with action policy enabled:
 ```
 python3 train.py -c configs/train_config.gin -d datasets/ -o <output-dir> -e <wandb-entity> -n <wandb-project> -r <wandb-run>
 ```
 
-3. Training with world model only:
+4. Training with world model only:
 ```
 python3 train.py -c configs/pretrained_gwm_train_config.gin -d datasets/ -o <output-dir> -e <wandb-entity> -n <wandb-project> -r <wandb-run>
 ```
 
-4. Evaluating checkpoint:
+5. Evaluating checkpoint:
 ```
 python3 evaluate.py -c configs/train_config.gin -d datasets/ -p <checkpoint> -e <wandb-entity> -n <wandb-project> -r <wandb-run>
 ```
 
-5. ONNX & TensorRT conversion:
+6. ONNX & TensorRT conversion:
 ```
 python3 onnx_conversion.py -p <checkpoint> -o <onnx_file_path>
 

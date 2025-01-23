@@ -47,4 +47,4 @@ $ source install/setup.bash
 $ ros2 launch x_mobility_navigator x_mobility_navigator.launch.py
 ```
 
-**Note:** This demo is in mapless mode for easier setup, and X-Mobility can also easily digest the global route with proper localization. To enable that, set the parameter `is_mapless` to False, and sent the route info via topic `/route`.
+**Note:** This demo is in mapless mode for easier setup, performance might downgrade. X-Mobility can also digest the global route with proper localization. To enable that, set the parameter `is_mapless` to False, and send the route info via topic `/route`.

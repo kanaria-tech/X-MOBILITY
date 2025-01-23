@@ -70,7 +70,6 @@ def upsample_points(start, goal, max_segment_length):
 class XMobilityNavigator(Node):
     '''X-Mobility Navigator ROS Node
     '''
-
     def __init__(self):
         super().__init__('x_mobility_navigator')
         # Parameters
