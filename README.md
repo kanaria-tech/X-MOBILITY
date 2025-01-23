@@ -30,17 +30,17 @@ export WANDB_API_KEY=<wandb-api-key>
 
 2. Training with action policy enabled:
 ```
-python3 train.py -c configs/train_config.gin -d datasets/ -o <output-dir>
+python3 train.py -c configs/train_config.gin -d datasets/ -o <output-dir> -e <wandb-entity> -n <wandb-project> -r <wandb-run>
 ```
 
 3. Training with world model only:
 ```
-python3 train.py -c configs/pretrained_gwm_train_config.gin -d datasets/ -o <output-dir>
+python3 train.py -c configs/pretrained_gwm_train_config.gin -d datasets/ -o <output-dir> -e <wandb-entity> -n <wandb-project> -r <wandb-run>
 ```
 
 4. Evaluating checkpoint:
 ```
-python3 evaluate.py -c configs/train_config.gin -d datasets/ -p <checkpoint>
+python3 evaluate.py -c configs/train_config.gin -d datasets/ -p <checkpoint> -e <wandb-entity> -n <wandb-project> -r <wandb-run>
 ```
 
 5. ONNX & TensorRT conversion:
@@ -49,6 +49,8 @@ python3 onnx_conversion.py -p <checkpoint> -o <onnx_file_path>
 
 python3 trt_conversion.py -o <onnx_file_path> -t <trt_file_path>
 ```
+**Note:** TensorRT engines are specific to both the TensorRT version and the GPU on which they are created. Therefore, it's recommended to rebuild the engine outside of docker on the target platform to run inference.
+
 
 6. E2E navigation with ROS2:
 

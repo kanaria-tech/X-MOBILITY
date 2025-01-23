@@ -33,8 +33,6 @@ pip3 install pycuda
 sudo apt-get install python3-libnvinfer-dev
 ```
 
-**Note:** TensorRT engines are specific to both the TensorRT version and the GPU on which they are created. Therefore, it's recommended to rebuild the engine on the target platform to run inference.
-
 ## Demo
 
 Open the example ROS2 scenario `Carter Navigation` in Isaac Sim, then click the Play button to run the simulation. After that, Isaac Sim should start to publish ROS topics for sensor reading and odometry, and subscribe to the commands.
