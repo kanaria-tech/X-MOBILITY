@@ -27,6 +27,11 @@ provided.
 
 1. Install NVIDIA TensorRT following the guides [here](https://docs.nvidia.com/deeplearning/tensorrt/10.8.0/installing-tensorrt/installing.html#).
 2. Test the installation by calling ``python3 -c "import tensorrt"``
+3. Install PyCUDA 
+
+    ```bash
+    pip3 install pycuda
+    ```
 
 ### Step 4 - Setup your ROS2 workspace and build x_mobility_navigator package
 
