@@ -3,6 +3,8 @@
 This example demonstrates how you can use the X-Mobility TensorRT engine
 to run navigation inside Isaac Sim using the ROS2 bridge and the ``x_mobility_navigator`` ROS2 package.
 
+<img src="../images/ros2_navigation_with_rviz.png" height=320/>
+
 ## Prerequisites
 
 - A Ubuntu 22.04 machine with recommended [Isaac Sim System Requirements](https://docs.omniverse.nvidia.com/isaacsim/latest/installation/requirements.html)
@@ -189,3 +191,4 @@ Now let's launch the X-Mobility package
 
 That's it!  If everything worked, you should see the robot moving towards the goal pose in the simulation.
 
+<img src="../images/ros2_navigation_with_rviz.png" height=320>
