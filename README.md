@@ -71,7 +71,7 @@ X-Mobility is released under the Apache License 2.0. See LICENSE for additional 
 Wei Liu, Huihua Zhao, Chenran Li, Joydeep Biswas, Billy Okal, Pulkit Goyal, Soha Pouya, Yan Chang
 
 ## Upcoming Features
-Stay tuned for the upcoming RL enhancements for embodiments using Isaac Lab.
+Stay tuned for the upcoming RL enhancements for embodiments using Isaac Lab. 
 
 ## Acknowledgments
 We would like to acknowledge the following projects where parts of the codes in this repo is derived from:
