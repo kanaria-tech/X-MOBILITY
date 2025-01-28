@@ -18,7 +18,7 @@ This is the PyTorch implementation for training and deployment of <a href="https
 docker build --network=host -t <image-name> .
 ```
 
-3. Download the datasets from Hugging Face: https://huggingface.co/nvidia/X-Mobility
+3. Download the datasets from Hugging Face: https://huggingface.co/datasets/nvidia/X-Mobility
 - **x_mobility_isaac_sim_nav2_100k.zip**: Teacher policy dataset to train world model and action network together.
 - **x_mobility_isaac_sim_random_160k.zip**: Random action dataset to pre-train world model without action network.
 
