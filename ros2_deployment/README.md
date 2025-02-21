@@ -27,7 +27,7 @@ provided.
 
 1. Install NVIDIA TensorRT following the guides [here](https://docs.nvidia.com/deeplearning/tensorrt/10.8.0/installing-tensorrt/installing.html#).
 2. Test the installation by calling ``python3 -c "import tensorrt"``
-3. Install PyCUDA 
+3. Install PyCUDA
 
     ```bash
     pip3 install pycuda
@@ -53,7 +53,7 @@ provided.
     cd ~/ros2_ws
     ```
 
-    and 
+    and
 
     ```bash
     colcon build --symlink-install
@@ -69,7 +69,7 @@ provided.
     ```
 3. Copy the TensorRT engine to ``/tmp/x_mobility.engine``.  The x_mobility_navigator launch file uses this path by default.
 
-Now you have everything needed to run the ``x_mobility_navigator`` package.  
+Now you have everything needed to run the ``x_mobility_navigator`` package.
 
 But we'll return to this step later, first we need to enable ROS2 with Isaac Sim.
 
