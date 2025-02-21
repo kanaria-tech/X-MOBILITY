@@ -25,3 +25,10 @@ venv/
 
 #Jupter notebook
 *.ipynb_checkpoints/
+
+# Python egg metadata
+*.egg-info/
+*.egg-info/*
+*.egg
+dist/
+build/
