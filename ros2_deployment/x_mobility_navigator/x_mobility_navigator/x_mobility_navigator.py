@@ -131,6 +131,9 @@ class XMobilityNavigator(Node):
 
     def goal_callback(self, goal_msg):
         self.goal = goal_msg
+        # Reset history state
+        self.history = np.zeros((1, 1024), dtype=np.float32)
+        self.sample = np.zeros((1, 512), dtype=np.float32)
 
     def route_callback(self, route_msg):
         # Get transform between route and robot.
@@ -271,15 +274,14 @@ class XMobilityNavigator(Node):
         self.cmd_publisher.publish(cmd_vel)
 
     def publish_path(self):
-        # print(self.path)
         path = Path()
         path.header.frame_id = ROBOT_FRAME
         path.header.stamp = self.get_clock().now().to_msg()
-        for idx in range(5):
+        for idx in range(len(self.route_vectors)):
             path_pose = PoseStamped()
             path_pose.header = path.header
-            path_pose.pose.position.x = float(self.path[2 * idx])
-            path_pose.pose.position.y = float(self.path[2 * idx + 1])
+            path_pose.pose.position.x = float(self.route_vectors[idx][0])
+            path_pose.pose.position.y = float(self.route_vectors[idx][1])
             path.poses.append(path_pose)
         self.path_publisher.publish(path)
 

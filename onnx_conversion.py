@@ -79,7 +79,8 @@ def convert(checkpoint_path: str, onnx_path: str, enable_semantic: bool,
     model.eval()
 
     # Input tensors.
-    image = torch.randn((1, 1, 3, 640, 960), dtype=torch.float32).to(device)
+    # Note: Image size should be adjusted to match the camera resolution.
+    image = torch.randn((1, 1, 3, 1200, 1920), dtype=torch.float32).to(device)
     speed = torch.randn((1, 1, 1), dtype=torch.float32).to(device)
     action = torch.randn((1, 6), dtype=torch.float32).to(device)
     history = torch.zeros((1, 1024), dtype=torch.float32).to(device)

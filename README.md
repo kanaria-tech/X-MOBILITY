@@ -57,7 +57,7 @@ python3 onnx_conversion.py -p <checkpoint> -o <onnx_file_path>
 
 python3 trt_conversion.py -o <onnx_file_path> -t <trt_file_path>
 ```
-**Note:** TensorRT engines are specific to both the TensorRT version and the GPU on which they are created. Therefore, it's recommended to rebuild the engine outside of docker on the target platform to run inference.
+**Note:** 1) Image size should be adjusted to match the camera resolution in ONNX conversion. 2) TensorRT engines are specific to both the TensorRT version and the GPU on which they are created. Therefore, it's recommended to rebuild the engine outside of docker on the target platform to run inference.
 
 
 6. E2E navigation with ROS2:
@@ -71,7 +71,7 @@ X-Mobility is released under the Apache License 2.0. See LICENSE for additional 
 Wei Liu, Huihua Zhao, Chenran Li, Joydeep Biswas, Billy Okal, Pulkit Goyal, Soha Pouya, Yan Chang
 
 ## Upcoming Features
-Stay tuned for the upcoming RL enhancements for embodiments using Isaac Lab. 
+Stay tuned for the upcoming RL enhancements for embodiments using Isaac Lab.
 
 ## Acknowledgments
 We would like to acknowledge the following projects where parts of the codes in this repo is derived from:
