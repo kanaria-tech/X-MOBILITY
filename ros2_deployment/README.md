@@ -196,4 +196,4 @@ Now let's launch the X-Mobility package
 
 That's it!  If everything worked, you should see the robot moving towards the goal pose in the simulation.
 
-<img src="../images/ros2_navigation_with_rviz.png" height=320>
+<video src="../images/x_mobility_demo_short.mp4" controls width=640/>
