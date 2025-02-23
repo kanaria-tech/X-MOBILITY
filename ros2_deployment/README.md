@@ -196,4 +196,6 @@ Now let's launch the X-Mobility package
 
 That's it!  If everything worked, you should see the robot moving towards the goal pose in the simulation.
 
-<video src="../images/x_mobility_demo_short.mp4" controls width=640/>
+
+https://github.com/user-attachments/assets/32931225-60b1-4fbb-8f17-1b7e7641808f
+
