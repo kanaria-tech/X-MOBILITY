@@ -1,6 +1,14 @@
 <h1 align="center">X-Mobility: E2E Generalizable Navigation with World Modeling</h1>
 </p>
 
+<div align="center">
+
+[[Website]](https://nvlabs.github.io/X-MOBILITY/)
+[[arXiv]](https://arxiv.org/abs/2410.17491)
+</div>
+
+
+## Overview
 This is the PyTorch implementation for training and deployment of <a href="https://arxiv.org/abs/2410.17491">X-Mobility</a>.
 
 <p align="center">
