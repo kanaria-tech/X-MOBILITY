@@ -29,14 +29,15 @@ docker build --network=host -t <image-name> .
 3. Download the datasets from Hugging Face: https://huggingface.co/datasets/nvidia/X-Mobility
 - **x_mobility_isaac_sim_nav2_100k.zip**: Teacher policy dataset to train world model and action network together.
 - **x_mobility_isaac_sim_random_160k.zip**: Random action dataset to pre-train world model without action network.
-
+- Put them under the folder `datasets` in main repo folder, unzip the dataset.
+- `datasets` folder should have `train`, `val`, and `test` folders
 4. [Optional] Download the pre-trained checkpoints from Hugging Face: https://huggingface.co/nvidia/X-Mobility
 - **x_mobility-nav2-semantic_action_path.ckpt**: Trained with teacher policy dataset with semantic segmenetation, action and path decoding enabled.
 
 ## Usages
 1. Launch the docker image:
 ```
-docker run --shm-size=512g -v <path-to-datasets>:/workspace/datasets -it <image-name> bash
+docker run --gpus all --shm-size=512g -v <path-to-datasets>:/workspace/datasets -it <image-name> bash
 ```
 
 2. Set WANDB_API_KEY inside container:
