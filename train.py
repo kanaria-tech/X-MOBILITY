@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import os
-
+import pdb
 import gin
 import pytorch_lightning as pl
 import wandb
@@ -63,6 +63,8 @@ def train(dataset_path, output_dir, ckpt_path, wandb_entity_name,
                          callbacks=callbacks,
                          strategy='ddp_find_unused_parameters_true',
                          logger=wandb_logger)
+    
+    pdb.set_trace()
     trainer.fit(model, datamodule=data)
 
     trainer.test(ckpt_path="last", datamodule=data)
