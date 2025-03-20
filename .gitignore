@@ -22,6 +22,10 @@ venv/
 
 # Data files
 *.pkl
+*.pqt
+*.mp4
+*.zip
+
 
 #Jupter notebook
 *.ipynb_checkpoints/
@@ -32,3 +36,16 @@ venv/
 *.egg
 dist/
 build/
+
+# exclude json files in datasets folder, in all levels
+datasets/**/*.json
+
+# everything in outputs folder
+outputs/**
+
+# nohup.out files
+nohup.out
+
+# wandb files
+wandb/
+
