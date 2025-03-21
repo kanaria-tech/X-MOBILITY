@@ -20,11 +20,141 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 from transformers import DepthAnythingForDepthEstimation, Dinov2Model
-
+from PIL import Image
+from torchvision import transforms as TF
+from vggt.vggt.models.vggt import VGGT
 from model.x_mobility.utils import pack_sequence_dim, unpack_sequence_dim
 
 # Need to compute this dynamically and adapt to different image size.
 DEPTH_ANYTHING_IMAGE_SIZE = [322, 518]
+
+@gin.configurable
+class VGGTEncoder(nn.Module):
+    def __init__(self, out_channels_pose: int, out_channels_vggt: int):
+        super().__init__()
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.pose_encoder = nn.Sequential(
+            nn.Linear(9, out_channels_pose),
+            nn.ReLU(True),
+            nn.Linear(out_channels_pose, out_channels_pose),
+            nn.ReLU(True),
+        )
+        self.vggt_encoder = nn.Sequential(
+            nn.Linear(2048, out_channels_vggt),
+            nn.ReLU(True),
+            nn.Linear(out_channels_vggt, out_channels_vggt),
+            nn.ReLU(True),
+        )
+        # Do not train the VGGT model
+        self.model = VGGT.from_pretrained("facebook/VGGT-1B").to(self.device)
+        self.model.eval()
+        for param in self.model.parameters():
+            param.requires_grad = False
+        # bfloat16 is supported on Ampere GPUs (Compute Capability 8.0+)
+        self.dtype = torch.bfloat16 if torch.cuda.get_device_capability()[0] >= 8 else torch.float16
+        self.out_channels = [out_channels_pose, out_channels_vggt]
+
+    def forward(self, images):
+        images = self.load_vggt_images(images)
+        with torch.no_grad():
+            with torch.cuda.amp.autocast(dtype=self.dtype):
+                images = images[None]  # add batch dimension
+                aggregated_tokens_list, ps_idx = self.model.aggregator(images)
+                pose_enc_list = self.model.camera_head(aggregated_tokens_list)
+                pose = pose_enc_list[-1].squeeze()  # pose encoding of the last iteration
+                pose_embedding = self.pose_encoder(pose)
+                vggt_embeddings = self.vggt_encoder(torch.mean(aggregated_tokens_list[-1], dim=2).squeeze())
+
+        return pose_embedding, vggt_embeddings
+
+
+    def load_vggt_images(self, images_array: torch.Tensor):
+        """
+        A quick start function to load and preprocess images for model input.
+        This assumes the images should have the same shape for easier batching, but our model can also work well with different shapes.
+
+        Args:
+            images_array: torch.Tensor of image tensors
+
+        Returns:
+            torch.Tensor: Batched tensor of preprocessed images with shape (N, 3, H, W)
+
+        Raises:
+            ValueError: If the input list is empty
+
+        Notes:
+            - Images with different dimensions will be padded with white (value=1.0)
+            - A warning is printed when images have different shapes
+            - The function ensures width=518px while maintaining aspect ratio
+            - Height is adjusted to be divisible by 14 for compatibility with model requirements
+        """
+        # Check for empty list
+        if len(images_array) == 0:
+            raise ValueError("At least 1 image is required")
+
+        images = []
+        shapes = set()
+        # images_array  = images_array.squeeze()
+        B, S, C_in, height, width = images_array.shape
+        if C_in != 3:
+            raise ValueError(f"Expected 3 input channels, got {C_in}")
+
+        images_packed = pack_sequence_dim(images_array)
+        no_of_images = B * S
+        # First process all images and collect their shapes
+        for iter_image in range(no_of_images):
+            img = images_packed[iter_image]
+            new_width = 518
+            # Calculate height maintaining aspect ratio, divisible by 14
+            new_height = round(height * (new_width / width) / 14) * 14
+            # Resize with new dimensions (width, height)
+            img = img.unsqueeze(0)
+            img = F.interpolate(img, size=(new_height, new_width), mode='bicubic')  # Downsample to 32x32
+            img = img.squeeze(0)
+            # Center crop height if it's larger than 518
+            if new_height > 518:
+                start_y = (new_height - 518) // 2
+                img = img[:, start_y: start_y + 518, :]
+
+            shapes.add((img.shape[1], img.shape[2]))
+            images.append(img)
+
+        # Check if we have different shapes
+        # In theory our model can also work well with different shapes
+
+        if len(shapes) > 1:
+            print(f"Warning: Found images with different shapes: {shapes}")
+            # Find maximum dimensions
+            max_height = max(shape[0] for shape in shapes)
+            max_width = max(shape[1] for shape in shapes)
+
+            # Pad images if necessary
+            padded_images = []
+            for img in images:
+                h_padding = max_height - img.shape[1]
+                w_padding = max_width - img.shape[2]
+
+                if h_padding > 0 or w_padding > 0:
+                    pad_top = h_padding // 2
+                    pad_bottom = h_padding - pad_top
+                    pad_left = w_padding // 2
+                    pad_right = w_padding - pad_left
+
+                    img = torch.nn.functional.pad(
+                        img, (pad_left, pad_right, pad_top, pad_bottom), mode="constant", value=1.0
+                    )
+                padded_images.append(img)
+            images = padded_images
+
+        images = torch.stack(images)  # concatenate images
+
+        # Ensure correct shape when single image
+        if B == 1:
+            # Verify shape is (1, C, H, W)
+            if images.dim() == 3:
+                images = images.unsqueeze(0)
+
+        return images
 
 
 @gin.configurable
@@ -186,6 +316,9 @@ class ObservationEncoder(nn.Module):
         self.speed_encoder = SpeedEncoder()
         features_channels += self.speed_encoder.out_channels
 
+        self.vggt_encoder = VGGTEncoder()
+        features_channels += self.vggt_encoder.out_channels[0] + self.vggt_encoder.out_channels[1]
+
         self.embedding_dim = features_channels
 
     def forward(self, batch: Dict) -> torch.Tensor:
@@ -199,9 +332,12 @@ class ObservationEncoder(nn.Module):
         # Speed encoding
         speed_features = self.speed_encoder(speed)
 
+        # VGGT encoding
+        pose_features, vggt_features = self.vggt_encoder(batch['image'])
+
         # Final observation embedding.
         embedding = torch.cat(
-            [image_encoding_outputs['image_features'], speed_features], dim=1)
+            [image_encoding_outputs['image_features'], speed_features, pose_features, vggt_features], dim=1)
 
         # Compose outputs.
         outputs = {}

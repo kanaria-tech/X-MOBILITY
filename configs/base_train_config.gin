@@ -47,6 +47,8 @@ VectorNetSubGraph.num_layers=4
 ImageDepthAnythingEncoder.enable_fine_tune=True
 ImageDINOEncoder.enable_fine_tune=True
 ObservationEncoder.image_encoder=@ImageDINOEncoder
+VGGTEncoder.out_channels_pose=32
+VGGTEncoder.out_channels_vggt=256
 
 # Decoders
 SegmentationHead.n_classes=%NUM_SEMANTIC_CLASSES

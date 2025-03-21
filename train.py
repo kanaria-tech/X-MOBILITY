@@ -20,12 +20,10 @@ import pytorch_lightning as pl
 import wandb
 from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
-
-from arg_parser import parse_arguments, TaskMode
 from model.dataset.isaac_sim_dataset import XMobilityIsaacSimDataModule  # pylint: disable=unused-import
 from model.trainer import XMobilityTrainer  # pylint: disable=unused-import
-from vggt.vggt.models.vggt import VGGT # pylint: disable=unused-import
 
+from arg_parser import parse_arguments, TaskMode
 
 @gin.configurable
 def train(dataset_path, output_dir, ckpt_path, wandb_entity_name,

@@ -5,11 +5,11 @@ description = "No desc"
 authors = ["ozgur"]
 license = "Apache"
 readme = "README.md"
-packages = [{ include = "vggt" }, { include = "x_mobility" }]  # Optional if using as a package
+packages = [ { include = "x_mobility" }]  # Optional if using as a package
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
-vggt = { path = "./vggt" }
+#vggt = { path = "./vggt" }
 # ✅ Core ML/DL stack
 
 # ✅ From x-mobility

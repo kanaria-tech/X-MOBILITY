@@ -178,7 +178,10 @@ class IsaacSimDataset(Dataset):
                 required_columns = REQUIRED_COLUMNS + SEMANTIC_IMAGE_COLUMNS
 
         # Iterate each scenario in the dataset.
+        scenario_iter = 0
         for scenario in os.listdir(dataset_path):
+            # if scenario_iter == 1:
+            #     break
             scenario_path = os.path.join(dataset_path, scenario)
             # Iterate the sorted runs for the given scenario.
             run_files = [
@@ -186,6 +189,7 @@ class IsaacSimDataset(Dataset):
                 if run_file.endswith('pqt')
             ]
             run_files = sorted(run_files)
+            # run_files = run_files[:100]
             with tqdm(total=len(run_files),
                       desc=f"Loading data from {scenario_path}",
                       unit="file") as pbar:
@@ -198,6 +202,7 @@ class IsaacSimDataset(Dataset):
                     self.accumulated_sample_sizes.append(self.num_samples)
                     self.num_samples += len(df) // self.sequence_length
                     pbar.update(1)
+            scenario_iter += 1
 
     def __len__(self):
         return self.num_samples
