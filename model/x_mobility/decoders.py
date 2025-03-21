@@ -117,6 +117,28 @@ class SegmentationHead(nn.Module):
         }
         return output
 
+@gin.configurable
+class DepthVGGTHead(nn.Module):
+    '''Prediction head for semantic segmentation
+    '''
+    def __init__(self, in_channels: int,
+                 downsample_factor: int):
+        '''
+        Args:
+            in_channels (int): input channel size
+            downsample_factor (int): downsampling factor
+        '''
+        super().__init__()
+        self.downsample_factor = downsample_factor
+        self.depth_head = nn.Sequential(
+            nn.Conv2d(in_channels, 1, kernel_size=1, padding=0), )
+
+    def forward(self, x: torch.Tensor) -> Dict:
+        output = {
+            f'depth_vggt_{self.downsample_factor}':
+            self.depth_head(x),
+        }
+        return output
 
 @gin.configurable
 class RgbHead(nn.Module):

@@ -338,10 +338,12 @@ class XMobilityLoss(nn.Module):
                  path_weight: float,
                  kl_weight: float,
                  semantic_weight: float,
+                 depth_vggt_weight: float,
                  rgb_weight: float,
                  diffusion_weight: float,
                  depth_weight: float,
                  enable_semantic: bool,
+                 enable_depth_vggt: bool,
                  enable_rgb_stylegan: bool,
                  enable_rgb_diffusion: bool,
                  enable_policy_diffusion: bool,
@@ -351,10 +353,12 @@ class XMobilityLoss(nn.Module):
         self.path_weight = path_weight
         self.kl_weight = kl_weight
         self.semantic_weight = semantic_weight
+        self.depth_vggt_weight = depth_vggt_weight
         self.rgb_weight = rgb_weight
         self.diffusion_weight = diffusion_weight
         self.depth_weight = depth_weight
         self.enable_semantic = enable_semantic
+        self.enable_depth_vggt = enable_depth_vggt
         self.enable_rgb_stylegan = enable_rgb_stylegan
         self.enable_rgb_diffusion = enable_rgb_diffusion
         self.enable_policy_diffusion = enable_policy_diffusion
@@ -371,6 +375,8 @@ class XMobilityLoss(nn.Module):
 
         if self.enable_semantic:
             self.segmentation_loss = SegmentationLoss()
+        if self.enable_depth_vggt:
+            self.depth_vggt_loss = DepthLoss()
         if self.enable_rgb_stylegan:
             self.rgb_loss = RgbLoss()
         if self.enable_rgb_diffusion:
@@ -411,6 +417,20 @@ class XMobilityLoss(nn.Module):
                 losses[f"semantic_segmentation_{downsampling_factor}"] = (
                     discount * self.semantic_weight *
                     semantic_segmentation_loss)
+
+        # Depth loss.
+        if self.enable_depth_vggt:
+            for downsampling_factor in [1, 2, 4]:
+                if f"depth_vggt_{downsampling_factor}" not in output:
+                    continue
+                depth_vggt_loss = self.depth_vggt_loss(
+                    output[f"depth_vggt_{downsampling_factor}"],
+                    batch[f"depth_vggt_{downsampling_factor}"]
+                )
+                discount = 1 / downsampling_factor
+                losses[f"depth_vggt_{downsampling_factor}"] = (
+                        discount * self.depth_vggt_weight *
+                        depth_vggt_loss)
 
         # StyleGan RGB regression loss.
         if self.enable_rgb_stylegan:

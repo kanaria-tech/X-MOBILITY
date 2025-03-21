@@ -19,7 +19,7 @@ import gin
 import torch
 from torch import nn
 
-from model.x_mobility.decoders import StyleGanDecoder, RgbHead, SegmentationHead
+from model.x_mobility.decoders import StyleGanDecoder, RgbHead, SegmentationHead, DepthVGGTHead
 from model.x_mobility.diffusion_rgb import RGBDiffuser
 from model.x_mobility.action_policy import ActionPolicy
 from model.x_mobility.encoders import ObservationEncoder
@@ -46,11 +46,13 @@ class XMobility(nn.Module):
     '''
     def __init__(self,
                  enable_semantic: bool = False,
+                 enable_depth_vggt: bool = False,
                  enable_rgb_stylegan: bool = False,
                  enable_rgb_diffusion: bool = True,
                  is_gwm_pretrain: bool = True):
         super().__init__()
         self.enable_semantic = enable_semantic
+        self.enable_depth_vggt = enable_depth_vggt
         self.enable_rgb_stylegan = enable_rgb_stylegan
         self.enable_rgb_diffusion = enable_rgb_diffusion
         self.is_gwm_pretrain = is_gwm_pretrain
@@ -71,6 +73,10 @@ class XMobility(nn.Module):
         if self.enable_semantic:
             self.semantic_decoder = StyleGanDecoder(
                 prediction_head=SegmentationHead, latent_n_channels=state_dim)
+
+        if self.enable_depth_vggt:
+            self.depth_vggt_decoder = StyleGanDecoder(prediction_head=DepthVGGTHead,
+                                               latent_n_channels=state_dim)
 
         # RGB generation with StyleGan
         if self.enable_rgb_stylegan:
@@ -114,6 +120,12 @@ class XMobility(nn.Module):
             semantic_decoder_output = unpack_sequence_dim(
                 semantic_decoder_output, b, s)
             output = {**output, **semantic_decoder_output}
+
+        if self.enable_depth_vggt:
+            depth_vggt_decoder_output = self.depth_vggt_decoder(state)
+            depth_vggt_decoder_output = unpack_sequence_dim(
+                depth_vggt_decoder_output, b, s)
+            output = {**output, **depth_vggt_decoder_output}
 
         # Get RGB output.
         if self.enable_rgb_stylegan:
@@ -159,6 +171,14 @@ class XMobility(nn.Module):
             semantic_output = semantic_decoder_output[
                 'semantic_segmentation_1']
 
+        if self.enable_depth_vggt:
+            depth_vggt_decoder_output = self.depth_vggt_decoder(state)
+            depth_vggt_decoder_output = unpack_sequence_dim(
+                depth_vggt_decoder_output, b, s)
+            depth_vggt_output = depth_vggt_decoder_output['depth_vggt_1']
+        else:
+            depth_vggt_output = None
+
         rgb_output = None
         if enable_rgb_inference:
             if self.enable_rgb_diffusion:
@@ -170,10 +190,10 @@ class XMobility(nn.Module):
                     rgb_decoder_output, b, s)
                 rgb_output = rgb_decoder_output['rgb_1']
 
-        depth_output = obs_dict['depth'] if enable_depth else None
+        # depth_output = obs_dict['depth'] if enable_depth else None
 
         return action_output, path_output, history, sample, \
-            semantic_output, rgb_output, depth_output
+            semantic_output, rgb_output, depth_vggt_output
 
     @torch.inference_mode()
     def inference_prediction(

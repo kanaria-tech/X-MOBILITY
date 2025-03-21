@@ -73,17 +73,21 @@ class XMobilityIsaacSimDataModule(pl.LightningDataModule):
                  sequence_length: int,
                  num_workers: int,
                  enable_semantic: bool = False,
+                 enable_depth_vggt: bool = False,
                  enable_rgb_stylegan: bool = False,
                  is_gwm_pretrain: bool = False,
-                 precomputed_semantic_label: bool = True):
+                 precomputed_semantic_label: bool = True,
+                 precomputed_depth_vggt: bool = False):
         super().__init__()
         self.batch_size = batch_size
         self.sequence_length = sequence_length
         self.num_workers = num_workers
         self.enable_semantic = enable_semantic
+        self.enable_depth_vggt = enable_depth_vggt
         self.enable_rgb_stylegan = enable_rgb_stylegan
         self.is_gwm_pretrain = is_gwm_pretrain
         self.precomputed_semantic_label = precomputed_semantic_label
+        self.precomputed_depth_vggt = precomputed_depth_vggt
         self.dataset_path = dataset_path
         self.train_dataset = None
         self.val_dataset = None
@@ -92,17 +96,17 @@ class XMobilityIsaacSimDataModule(pl.LightningDataModule):
         if stage == 'fit':
             self.train_dataset = IsaacSimDataset(
                 os.path.join(self.dataset_path, 'train'), self.sequence_length,
-                self.enable_semantic, self.enable_rgb_stylegan,
-                self.is_gwm_pretrain, self.precomputed_semantic_label)
+                self.enable_semantic, self.enable_rgb_stylegan, self.enable_depth_vggt,
+                self.is_gwm_pretrain, self.precomputed_semantic_label, self.precomputed_depth_vggt)
             self.val_dataset = IsaacSimDataset(
                 os.path.join(self.dataset_path, 'val'), self.sequence_length,
-                self.enable_semantic, self.enable_rgb_stylegan,
-                self.is_gwm_pretrain, self.precomputed_semantic_label)
+                self.enable_semantic, self.enable_rgb_stylegan,self.enable_depth_vggt,
+                self.is_gwm_pretrain, self.precomputed_semantic_label, self.precomputed_depth_vggt)
         if stage == 'test' or stage is None:
             self.test_dataset = IsaacSimDataset(
                 os.path.join(self.dataset_path, 'test'), self.sequence_length,
-                self.enable_semantic, self.enable_rgb_stylegan,
-                self.is_gwm_pretrain, self.precomputed_semantic_label)
+                self.enable_semantic, self.enable_rgb_stylegan, self.enable_depth_vggt,
+                self.is_gwm_pretrain, self.precomputed_semantic_label, self.precomputed_depth_vggt)
 
     def train_dataloader(self):
         train_sampler = DistributedSampler(self.train_dataset, shuffle=True)
@@ -138,6 +142,7 @@ class XMobilityIsaacSimDataModule(pl.LightningDataModule):
                                        self.sequence_length,
                                        self.enable_semantic,
                                        self.enable_rgb_stylegan,
+                                       self.enable_depth_vggt,
                                        self.is_gwm_pretrain)
         return DataLoader(
             test_dataset,
@@ -157,14 +162,18 @@ class IsaacSimDataset(Dataset):
                  sequence_length: int,
                  enable_semantic: bool = False,
                  enable_rgb_stylegan: bool = False,
+                 enable_depth_vggt: bool = False,
                  is_gwm_pretrain: bool = False,
-                 precomputed_semantic_label: bool = True):
+                 precomputed_semantic_label: bool = True,
+                 precomputed_depth_vggt: bool = False):
         super().__init__()
         self.sequence_length = sequence_length
         self.enable_semantic = enable_semantic
+        self.enable_depth_vggt = enable_depth_vggt
         self.enable_rgb_stylegan = enable_rgb_stylegan
         self.is_gwm_pretrain = is_gwm_pretrain
         self.precomputed_semantic_label = precomputed_semantic_label
+        self.precomputed_depth_vggt = precomputed_depth_vggt
         self.dfs = []
         self.accumulated_sample_sizes = []
         self.num_samples = 0
@@ -232,6 +241,9 @@ class IsaacSimDataset(Dataset):
         if self.enable_semantic:
             self._compose_semantic_labels(batch)
 
+        if self.enable_depth_vggt:
+            self._compose_depth_labels(batch)
+
         return batch
 
     def _get_element(self, df, sample_index):
@@ -242,6 +254,9 @@ class IsaacSimDataset(Dataset):
         element['speed'] = self._get_speed(sample)
         if self.enable_semantic:
             element['semantic_label'] = self._get_semantic_label(sample)
+
+        if self.enable_depth_vggt:
+            element['depth_vggt'] = self._get_depth_vggt(sample)
 
         if not self.is_gwm_pretrain:
             element['path'] = self._get_path(sample)
@@ -284,6 +299,13 @@ class IsaacSimDataset(Dataset):
             sample['perspective_semantic_image_shape'])
         return np.transpose(semantic_labels, (2, 0, 1))
 
+    def _get_depth_vggt(self, sample):
+        if self.precomputed_depth_vggt:
+            depth_vggt = np.array(sample['depth_vggt'], dtype=np.float32)
+            return np.transpose(depth_vggt, (2, 0, 1))
+        else:
+            return None
+
     def _get_action(self, sample):
         return sample['driving_command']
 
@@ -318,6 +340,18 @@ class IsaacSimDataset(Dataset):
                 batch[f'semantic_label_{previous_label_factor}'],
                 size,
                 mode=tvf.InterpolationMode.NEAREST)
+
+    def _compose_depth_labels(self, batch):
+        batch['depth_vggt_1'] = batch['depth_vggt']
+        h, w = batch['depth_vggt_1'].shape[-2:]
+        for downsample_factor in [2, 4]:
+            size = h // downsample_factor, w // downsample_factor
+            previous_label_factor = downsample_factor // 2
+            batch[f'depth_vggt_{downsample_factor}'] = interpolate_resize(
+                batch[f'depth_vggt_{previous_label_factor}'],
+                size,
+                mode=tvf.InterpolationMode.BILINEAR,
+            )
 
     def _compose_rgb_labels(self, batch):
         batch['rgb_label_1'] = batch['image']

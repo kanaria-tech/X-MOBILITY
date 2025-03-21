@@ -7,6 +7,7 @@ NUM_EPOCHS=100
 RECEPTIVE_FIELD=1
 SEQUENCE_LENGTH=4
 ENABLE_SEMANTIC=True
+ENABLE_DEPTH_VGGT = False
 ENABLE_RGB_STYLEGAN=False
 ENABLE_RGB_DIFFUSION=False
 ENABLE_POLICY_DIFFUSION=False
@@ -36,8 +37,10 @@ XMobilityIsaacSimDataModule.sequence_length=%SEQUENCE_LENGTH
 XMobilityIsaacSimDataModule.num_workers=1
 XMobilityIsaacSimDataModule.is_gwm_pretrain=%IS_GWM_PRETRAIN
 XMobilityIsaacSimDataModule.enable_semantic=%ENABLE_SEMANTIC
+XMobilityIsaacSimDataModule.enable_depth_vggt=%ENABLE_DEPTH_VGGT
 XMobilityIsaacSimDataModule.enable_rgb_stylegan=%ENABLE_RGB_STYLEGAN
 XMobilityIsaacSimDataModule.precomputed_semantic_label=True
+XMobilityIsaacSimDataModule.precomputed_depth_vggt=False
 
 #Encoders
 SpeedEncoder.out_channels=32
@@ -88,8 +91,10 @@ XMobilityLoss.action_weight=10.0
 XMobilityLoss.path_weight = 5.0
 XMobilityLoss.kl_weight=0.001
 XMobilityLoss.semantic_weight=2.0
+XMobilityLoss.depth_vggt_weight=2.0
 XMobilityLoss.rgb_weight=5.0
 XMobilityLoss.enable_semantic=%ENABLE_SEMANTIC
+XMobilityLoss.enable_depth_vggt=%ENABLE_DEPTH_VGGT
 XMobilityLoss.enable_rgb_stylegan=%ENABLE_RGB_STYLEGAN
 XMobilityLoss.enable_rgb_diffusion=%ENABLE_RGB_DIFFUSION
 XMobilityLoss.enable_policy_diffusion=%ENABLE_POLICY_DIFFUSION
@@ -108,6 +113,7 @@ RSSM.dropout_probability=0.0
 
 # XMobility
 XMobility.enable_semantic=%ENABLE_SEMANTIC
+XMobility.enable_depth_vggt=%ENABLE_DEPTH_VGGT
 XMobility.enable_rgb_stylegan=%ENABLE_RGB_STYLEGAN
 XMobility.enable_rgb_diffusion=%ENABLE_RGB_DIFFUSION
 XMobility.is_gwm_pretrain=%IS_GWM_PRETRAIN
