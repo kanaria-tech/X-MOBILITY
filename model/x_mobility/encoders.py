@@ -305,8 +305,10 @@ class ObservationEncoder(nn.Module):
         Returns:
             embedding: 1D embedding of the observations
     '''
-    def __init__(self, image_encoder: nn.Module):
+    def __init__(self, image_encoder: nn.Module, use_vggt: bool):
         super().__init__()
+
+        self.use_vggt = use_vggt
 
         # Image
         self.image_encoder = image_encoder()
@@ -316,8 +318,9 @@ class ObservationEncoder(nn.Module):
         self.speed_encoder = SpeedEncoder()
         features_channels += self.speed_encoder.out_channels
 
-        self.vggt_encoder = VGGTEncoder()
-        features_channels += self.vggt_encoder.out_channels[0] + self.vggt_encoder.out_channels[1]
+        if self.use_vggt:
+            self.vggt_encoder = VGGTEncoder()
+            features_channels += self.vggt_encoder.out_channels[0] + self.vggt_encoder.out_channels[1]
 
         self.embedding_dim = features_channels
 
@@ -332,12 +335,17 @@ class ObservationEncoder(nn.Module):
         # Speed encoding
         speed_features = self.speed_encoder(speed)
 
-        # VGGT encoding
-        pose_features, vggt_features = self.vggt_encoder(batch['image'])
+        if self.use_vggt:
+            # VGGT encoding
+            pose_features, vggt_features = self.vggt_encoder(batch['image'])
 
-        # Final observation embedding.
-        embedding = torch.cat(
-            [image_encoding_outputs['image_features'], speed_features, pose_features, vggt_features], dim=1)
+            # Final observation embedding.
+            embedding = torch.cat(
+                [image_encoding_outputs['image_features'], speed_features, pose_features, vggt_features], dim=1)
+        else:
+            # Final observation embedding.
+            embedding = torch.cat(
+                [image_encoding_outputs['image_features'], speed_features], dim=1)
 
         # Compose outputs.
         outputs = {}

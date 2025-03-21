@@ -47,6 +47,7 @@ VectorNetSubGraph.num_layers=4
 ImageDepthAnythingEncoder.enable_fine_tune=True
 ImageDINOEncoder.enable_fine_tune=True
 ObservationEncoder.image_encoder=@ImageDINOEncoder
+ObservationEncoder.use_vggt=True
 VGGTEncoder.out_channels_pose=32
 VGGTEncoder.out_channels_vggt=256
 
