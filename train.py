@@ -24,6 +24,7 @@ from pytorch_lightning.loggers import WandbLogger
 from arg_parser import parse_arguments, TaskMode
 from model.dataset.isaac_sim_dataset import XMobilityIsaacSimDataModule  # pylint: disable=unused-import
 from model.trainer import XMobilityTrainer  # pylint: disable=unused-import
+from vggt.vggt.models.vggt import VGGT # pylint: disable=unused-import
 
 
 @gin.configurable

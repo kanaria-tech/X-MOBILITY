@@ -4,7 +4,7 @@ include 'configs/base_train_config.gin'
 IS_GWM_PRETRAIN=True
 
 # Dataloader
-XMobilityIsaacSimDataModule.batch_size=4
+XMobilityIsaacSimDataModule.batch_size=1
 XMobilityIsaacSimDataModule.sequence_length=%SEQUENCE_LENGTH
 XMobilityIsaacSimDataModule.is_gwm_pretrain=%IS_GWM_PRETRAIN
 
